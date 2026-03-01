@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Backend/">
+    <Project Path="DataAccessApi/DataAccessApi.csproj" />
+    <Project Path="McpService/McpService.csproj" />
+    <Project Path="WebApi/WebApi.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Contracts/Contracts.csproj" />
+  </Folder>
+</Solution>
