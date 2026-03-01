@@ -1,0 +1,35 @@
+﻿@baseUrl = http://localhost:5033
+
+### Health
+GET {{baseUrl}}/health
+
+### List (paged)
+GET {{baseUrl}}/books?page=1&pageSize=10
+
+### Create
+POST {{baseUrl}}/books
+Content-Type: application/json
+
+{
+  "title": "Dune",
+  "author": "Frank Herbert",
+  "year": 1965,
+  "status": "Planned"
+}
+
+### Get by id  (ide írd be az előző POST válaszából az id-t)
+GET {{baseUrl}}/books/<ID>
+
+### Update
+PUT {{baseUrl}}/books/<ID>
+Content-Type: application/json
+
+{
+  "title": "Dune (Updated)",
+  "author": "Frank Herbert",
+  "year": 1965,
+  "status": "Reading"
+}
+
+### Delete
+DELETE {{baseUrl}}/books/<ID>
