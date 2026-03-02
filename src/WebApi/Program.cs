@@ -1,41 +1,32 @@
-var builder = WebApplication.CreateBuilder(args);
+using Contracts;
+using WebApi;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddOpenApi(); // :contentReference[oaicite:2]{index=2}
+
+builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
+	p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+var baseUrl = builder.Configuration["DataAccess:BaseUrl"] ?? "http://localhost:5033";
+builder.Services.AddHttpClient<IDataAccessClient, DataAccessClient>(c => c.BaseAddress = new Uri(baseUrl));
 
 var app = builder.Build();
+if (app.Environment.IsDevelopment()) app.MapOpenApi(); // :contentReference[oaicite:3]{index=3}
+app.UseCors();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-	app.MapOpenApi();
-}
+app.MapGet("/api/books", async (int page, int pageSize, IDataAccessClient client, CancellationToken ct)
+	=> Results.Ok(await client.GetBooks(page, pageSize, ct)));
 
-app.UseHttpsRedirection();
+app.MapGet("/api/books/{id}", async (string id, IDataAccessClient client, CancellationToken ct)
+	=> (await client.GetBook(id, ct)) is { } b ? Results.Ok(b) : Results.NotFound());
 
-var summaries = new[]
-{
-	"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.MapPost("/api/books", async (CreateBookRequest req, IDataAccessClient client, CancellationToken ct)
+	=> Results.Created("", await client.CreateBook(req, ct)));
 
-app.MapGet("/weatherforecast", () =>
-{
-	var forecast = Enumerable.Range(1, 5).Select(index =>
-		new WeatherForecast
-		(
-			DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-			Random.Shared.Next(-20, 55),
-			summaries[Random.Shared.Next(summaries.Length)]
-		))
-		.ToArray();
-	return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapPut("/api/books/{id}", async (string id, UpdateBookRequest req, IDataAccessClient client, CancellationToken ct)
+	=> (await client.UpdateBook(id, req, ct)) ? Results.NoContent() : Results.NotFound());
+
+app.MapDelete("/api/books/{id}", async (string id, IDataAccessClient client, CancellationToken ct)
+	=> (await client.DeleteBook(id, ct)) ? Results.NoContent() : Results.NotFound());
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-	public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
