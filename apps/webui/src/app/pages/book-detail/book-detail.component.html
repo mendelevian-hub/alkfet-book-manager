@@ -1,0 +1,36 @@
+<p>book-detail works!</p>
+<h1>{{ id ? 'Edit book' : 'New book' }}</h1>
+
+<div *ngIf="loading">Loading…</div>
+<div *ngIf="error" style="color:red; margin: 8px 0;">{{ error }}</div>
+
+<div *ngIf="!loading">
+	<div style="margin-bottom: 8px;">
+		<label>Title:</label><br />
+		<input [(ngModel)]="title" />
+	</div>
+
+	<div style="margin-bottom: 8px;">
+		<label>Author:</label><br />
+		<input [(ngModel)]="author" />
+	</div>
+
+	<div style="margin-bottom: 8px;">
+		<label>Year:</label><br />
+		<input type="number" [(ngModel)]="year" />
+	</div>
+
+	<div style="margin-bottom: 12px;">
+		<label>Status:</label><br />
+		<select [(ngModel)]="status">
+			<option>Planned</option>
+			<option>Reading</option>
+			<option>Finished</option>
+		</select>
+	</div>
+
+	<button (click)="save()">Save</button>
+	<button *ngIf="id" (click)="delete()" style="margin-left: 8px;">Delete</button>
+
+	<a routerLink="/books" style="margin-left: 12px;">Back</a>
+</div>
