@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Book, BookService } from '../../services/book.service';
+import { Book, BookService, PagedResult } from '../../services/book.service';
 
 @Component({
   selector: 'app-book-list',
@@ -26,7 +26,7 @@ export class BookListComponent {
     this.error = null;
 
     this.books.getBooks(this.page, this.pageSize).subscribe({
-      next: (res) => {
+      next: (res: PagedResult<Book>) => {
         this.items = res.items;
         this.total = res.total;
         this.loading = false;
