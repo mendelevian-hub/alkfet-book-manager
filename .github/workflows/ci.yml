@@ -3,13 +3,17 @@ name: ci
 on:
   push:
     branches: ["main"]
+    
+    paths-ignore:
+      - "deployment/prod/kustomization.yaml"
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
   build_and_push:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,18 +32,15 @@ jobs:
             image: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
           file: ${{ matrix.svc.dockerfile }}
@@ -47,3 +48,33 @@ jobs:
           tags: |
             ${{ matrix.svc.image }}:latest
             ${{ matrix.svc.image }}:${{ github.sha }}
+
+  bump_kustomize_tags:
+    if: github.actor != 'github-actions[bot]'
+    needs: build_and_push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kustomize
+        run: |
+          curl -sSLo kustomize.tgz https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.3/kustomize_v5.4.3_linux_amd64.tar.gz
+          tar -xzf kustomize.tgz
+          sudo mv kustomize /usr/local/bin/kustomize
+          kustomize version
+
+      - name: Update image tags in kustomization.yaml to SHA
+        run: |
+          cd deployment/prod
+          kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess=ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess:${GITHUB_SHA}
+          kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-webapi=ghcr.io/mendelevian-hub/alkfet-book-manager-webapi:${GITHUB_SHA}
+          kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-mcp=ghcr.io/mendelevian-hub/alkfet-book-manager-mcp:${GITHUB_SHA}
+          kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-webui=ghcr.io/mendelevian-hub/alkfet-book-manager-webui:${GITHUB_SHA}
+
+      - name: Commit & push tag bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add deployment/prod/kustomization.yaml
+          git commit -m "chore: bump images to ${GITHUB_SHA}" || exit 0
+          git push
