@@ -3,19 +3,23 @@ kind: Kustomization
 namespace: alkfet
 
 resources:
-  - namespace.yaml
-  - secrets.yaml
-  - dataaccess.yaml
-  - webapi.yaml
-  - mcp.yaml
-  - webui.yaml
+- namespace.yaml
+- secrets.yaml
+- dataaccess.yaml
+- webapi.yaml
+- mcp.yaml
+- webui.yaml
 
 images:
-  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
-    newTag: latest
-  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
-    newTag: latest
-  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
-    newTag: latest
-  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
-    newTag: latest
+- name: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
+  newName: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
+  newTag: ce22830eebe893790a327714c59a0211ad6d67fd
+- name: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
+  newName: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
+  newTag: ce22830eebe893790a327714c59a0211ad6d67fd
+- name: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
+  newName: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
+  newTag: ce22830eebe893790a327714c59a0211ad6d67fd
+- name: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
+  newName: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
+  newTag: ce22830eebe893790a327714c59a0211ad6d67fd
