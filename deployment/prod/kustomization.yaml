@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: alkfet
+
+resources:
+  - namespace.yaml
+  - secrets.yaml
+  - dataaccess.yaml
+  - webapi.yaml
+  - mcp.yaml
+  - webui.yaml
+
+images:
+  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
+    newTag: latest
+  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
+    newTag: latest
+  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
+    newTag: latest
+  - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
+    newTag: latest
