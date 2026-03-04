@@ -4,7 +4,7 @@ metadata:
   name: alkfet-webui
   namespace: alkfet
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: alkfet-webui
