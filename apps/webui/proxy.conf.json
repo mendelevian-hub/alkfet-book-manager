@@ -1,6 +1,6 @@
 {
   "/api": {
-    "target": "http://localhost:5033",
+    "target": "http://localhost:5204",
     "secure": false,
     "changeOrigin": true
   }
