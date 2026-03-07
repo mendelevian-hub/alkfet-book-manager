@@ -37,17 +37,17 @@ docker ps
 
 ### 3.3 DataAccessApi indítás (Visual Studio)
 
-1. Startup Project: DataAccessApi
+1. Startup Project: `DataAccessApi`
 
 2. F5
 
-Config: src/DataAccessApi/appsettings.json (Mongo rész):
+Config: `src/DataAccessApi/appsettings.json` (Mongo rész):
 
-- Mongo:ConnectionString = mongodb://localhost:27017
+- `Mongo:ConnectionString = mongodb://localhost:27017`
 
-- Mongo:Database = alkfet
+- `Mongo:Database = alkfet`
 
-Teszt (a <DATAACCESS_PORT> a VS Outputban látszik, pl. 5033):
+Teszt (a `<DATAACCESS_PORT>` a VS Outputban látszik, pl. `5033`):
 
 ```powershell
 curl.exe http://localhost:<DATAACCESS_PORT>/health
@@ -56,15 +56,15 @@ curl.exe "http://localhost:<DATAACCESS_PORT>/books?page=1&pageSize=10"
 
 ### 3.4 WebApi indítás (Visual Studio)
 
-1. Startup Project: WebApi
+1. Startup Project: `WebApi`
 
 2. F5
 
-Config: src/WebApi/appsettings.json:
+Config: `src/WebApi/appsettings.json`:
 
-- DataAccess:BaseUrl = http://localhost:<DATAACCESS_PORT>
+- `DataAccess:BaseUrl = http://localhost:<DATAACCESS_PORT>`
 
-Teszt (a <WEBAPI_PORT> a VS Outputban látszik, pl. 5204):
+Teszt (a `<WEBAPI_PORT>` a VS Outputban látszik, pl. `5204`):
 
 ```powershell
 curl.exe "http://localhost:<WEBAPI_PORT>/api/books?page=1&pageSize=10"
@@ -82,7 +82,7 @@ Config: src/McpService/appsettings.json:
 
 Mcp:AuthKey (dev-ben lehet üres)
 
-Teszt (a <MCP_PORT> a VS Outputban látszik):
+Teszt (a `<MCP_PORT>` a VS Outputban látszik):
 
 ```
 curl.exe http://localhost:<MCP_PORT>/health
@@ -96,22 +96,22 @@ npm start
 ```
 UI:
 
-http://localhost:4200
+`http://localhost:4200`
 
 Fejlesztéshez proxy (WebApi felé):
 
-apps/webui/proxy.conf.json target -> http://localhost:<WEBAPI_PORT>
+`apps/webui/proxy.conf.json` target -> `http://localhost:<WEBAPI_PORT>`
 
 ## 4) Docker image-ek
 ### 4.1 Dockerfile-ok
 
-src/DataAccessApi/Dockerfile
+`src/DataAccessApi/Dockerfile`
 
-src/WebApi/Dockerfile
+`src/WebApi/Dockerfile`
 
-src/McpService/Dockerfile
+`src/McpService/Dockerfile`
 
-apps/webui/Dockerfile
+`apps/webui/Dockerfile`
 
 ### 4.2 Lokális build teszt
 
@@ -125,15 +125,15 @@ docker build -f apps/webui/Dockerfile -t test-webui .
 
 ## 5) CI (GitHub Actions) – build + push GHCR-be
 
-Workflow: .github/workflows/ci.yml
+Workflow: `.github/workflows/ci.yml`
 
 Feladata:
 
 - build + push mind a 4 image-et GHCR-be
 
-- tagek: latest + ${{ github.sha }}
+- tagek: `latest` + `${{ github.sha }}`
 
-- GitOps “bump”: frissíti a deployment/prod/kustomization.yaml image tagjeit SHA-ra, commitol és pushol
+- GitOps “bump”: frissíti a `deployment/prod/kustomization.yaml` image tagjeit SHA-ra, commitol és pushol
 
 Fontos GitHub beállítás:
 
@@ -149,11 +149,11 @@ GHCR:
 
 ### 6.1 kind cluster létrehozás
 
-A kind-config.yaml port mapping:
+A `kind-config.yaml` port mapping:
 
-- WebUI: host 30080
+- WebUI: host `30080`
 
-- WebApi: host 30081
+- WebApi: host `30081`
 
 Cluster létrehozás:
 ```
@@ -230,7 +230,7 @@ $pwdB64 = kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="
 
 ### 7.3 Application felvétele
 
-Fájl: deployment/argocd/application.yaml
+Fájl: `deployment/argocd/application.yaml`
 
 Apply:
 ```
@@ -239,14 +239,13 @@ kubectl -n argocd get applications
 ```
 Kényszer refresh (ha kell):
 ```
-```
 kubectl -n argocd annotate application alkfet-book-manager argocd.argoproj.io/refresh=hard --overwrite
-
+```
 ## 8) Release flow
 
-1. Push a main branchre
+1. Push a `main` branchre
 
-2. CI: build+push GHCR + bumpolja a deployment/prod/kustomization.yaml tageket a commit SHA-ra
+2. CI: build+push GHCR + bumpolja a `deployment/prod/kustomization.yaml` tageket a commit SHA-ra
 
 3. ArgoCD auto-sync -> új podok SHA image taggel futnak
 
