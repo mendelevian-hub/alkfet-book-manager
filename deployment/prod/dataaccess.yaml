@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alkfet-dataaccess
+  namespace: alkfet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alkfet-dataaccess
+  template:
+    metadata:
+      labels:
+        app: alkfet-dataaccess
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: Mongo__ConnectionString
+              value: mongodb://alkfet-mongodb:27017
+            - name: Mongo__Database
+              value: alkfet
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alkfet-dataaccess
+  namespace: alkfet
+spec:
+  selector:
+    app: alkfet-dataaccess
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

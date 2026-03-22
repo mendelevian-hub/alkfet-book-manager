@@ -1,0 +1,32 @@
+<p>book-list works!</p>
+<h1>Books</h1>
+
+<div style="margin-bottom: 12px;">
+	<a routerLink="/books/new">+ New book</a>
+</div>
+
+<div *ngIf="loading">Loading…</div>
+<div *ngIf="error" style="color:red">{{ error }}</div>
+
+<table *ngIf="!loading && !error" border="1" cellpadding="6">
+	<tr>
+		<th>Title</th>
+		<th>Author</th>
+		<th>Year</th>
+		<th>Status</th>
+	</tr>
+
+	<tr *ngFor="let b of items">
+		<td><a [routerLink]="['/books', b.id]">{{ b.title }}</a></td>
+		<td>{{ b.author }}</td>
+		<td>{{ b.year }}</td>
+		<td>{{ b.status }}</td>
+	</tr>
+</table>
+
+<div style="margin-top:12px;">
+	<button (click)="prev()" [disabled]="page <= 1">Prev</button>
+	<span style="margin: 0 8px;">Page {{ page }}</span>
+	<button (click)="next()" [disabled]="page * pageSize >= total">Next</button>
+	<span style="margin-left: 8px;">(Total: {{ total }})</span>
+</div>

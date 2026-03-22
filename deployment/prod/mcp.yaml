@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alkfet-mcp
+  namespace: alkfet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alkfet-mcp
+  template:
+    metadata:
+      labels:
+        app: alkfet-mcp
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DataAccess__BaseUrl
+              value: http://alkfet-dataaccess:8080
+            - name: Mcp__AuthKey
+              valueFrom:
+                secretKeyRef:
+                  name: alkfet-secrets
+                  key: MCP_AUTH_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alkfet-mcp
+  namespace: alkfet
+spec:
+  selector:
+    app: alkfet-mcp
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

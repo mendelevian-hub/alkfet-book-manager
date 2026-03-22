@@ -1,0 +1,7 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.git/
+apps/webui/node_modules/
+apps/webui/dist/
+apps/webui/.angular/

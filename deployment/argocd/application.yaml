@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alkfet-book-manager
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/mendelevian-hub/alkfet-book-manager.git
+    targetRevision: main
+    path: deployment/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: alkfet
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
