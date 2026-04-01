@@ -1,0 +1,21 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build output
+bin/
+obj/
+
+# Node/Angular
+node_modules/
+dist/
+.angular/
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+/src/AlkfetBookManager.slnx
