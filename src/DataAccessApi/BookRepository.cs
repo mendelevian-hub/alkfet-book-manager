@@ -33,7 +33,8 @@ public sealed class BooksRepository : IBooksRepository
 
 	public BooksRepository(IMongoClient client, IConfiguration cfg)
 	{
-		var db = client.GetDatabase(cfg["Mongo:Database"] ?? "alkfet");
+		var dbName = cfg["Mongo:Database"] ?? throw new InvalidOperationException("Mongo:Database configuration is missing.");
+		var db = client.GetDatabase(dbName);
 		_col = db.GetCollection<BookDocument>("books");
 	}
 

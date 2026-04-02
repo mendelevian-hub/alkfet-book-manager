@@ -21,8 +21,6 @@ spec:
           env:
             - name: Mongo__ConnectionString
               value: mongodb://alkfet-mongodb:27017
-            - name: Mongo__Database
-              value: alkfet
 ---
 apiVersion: v1
 kind: Service
