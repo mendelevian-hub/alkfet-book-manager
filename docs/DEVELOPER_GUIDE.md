@@ -10,11 +10,13 @@ Ez a dokumentum fejlesztőknek szól: hogyan futtasd lokálisan, hogyan buildeld
 - **MongoDB** – adatbázis (K8s-ben Helm chartból)
 
 ## 2) Repo mappastruktúra (lényeg)
+
+Megj: A repository jelenleg nem teljesen egységes elnevezést használ: a backend projektek a `src/` mappában, míg a frontend az `apps/webui/` mappában található. Ez főként a projekt kialakulásából adódik, nem külön architekturális döntésből.
+
 - Backend: `src/`
 - Frontend: `apps/webui/`
 - K8s manifestek: `deployment/prod/`
 - ArgoCD app: `deployment/argocd/application.yaml`
-- kind config: `kind-config.yaml`
 
 ## 3) Lokális futtatás (Kubernetes nélkül)
 
@@ -47,11 +49,13 @@ Config: `src/DataAccessApi/appsettings.json` (Mongo rész):
 
 - `Mongo:Database = alkfet`
 
-Teszt (a `<DATAACCESS_PORT>` a VS Outputban látszik, pl. `5033`):
+A lokális fejlesztői port a jelenlegi beállítások alapján: 5033
+
+Teszt:
 
 ```powershell
-curl.exe http://localhost:<DATAACCESS_PORT>/health
-curl.exe "http://localhost:<DATAACCESS_PORT>/books?page=1&pageSize=10"
+curl.exe http://localhost:5033/health
+curl.exe "http://localhost:5033/books?page=1&pageSize=10"
 ```
 
 ### 3.4 WebApi indítás (Visual Studio)
@@ -62,12 +66,14 @@ curl.exe "http://localhost:<DATAACCESS_PORT>/books?page=1&pageSize=10"
 
 Config: `src/WebApi/appsettings.json`:
 
-- `DataAccess:BaseUrl = http://localhost:<DATAACCESS_PORT>`
+- `DataAccess:BaseUrl = http://localhost:5033`
 
-Teszt (a `<WEBAPI_PORT>` a VS Outputban látszik, pl. `5204`):
+A lokális fejlesztői port a jelenlegi beállítások alapján: 5204
+
+Teszt:
 
 ```powershell
-curl.exe "http://localhost:<WEBAPI_PORT>/api/books?page=1&pageSize=10"
+curl.exe "http://localhost:5024/api/books?page=1&pageSize=10"
 ```
 
 ### 3.5 McpService indítás (Visual Studio)
@@ -78,14 +84,16 @@ curl.exe "http://localhost:<WEBAPI_PORT>/api/books?page=1&pageSize=10"
 
 Config: src/McpService/appsettings.json:
 
-- DataAccess:BaseUrl = http://localhost:<DATAACCESS_PORT>
+- DataAccess:BaseUrl = http://localhost:5033
 
-Mcp:AuthKey (dev-ben lehet üres)
+- Mcp:AuthKey fejlesztői környezetben lehet üres
 
-Teszt (a `<MCP_PORT>` a VS Outputban látszik):
+A lokális fejlesztői port a jelenlegi beállítások alapján: 5111
+
+Teszt:
 
 ```
-curl.exe http://localhost:<MCP_PORT>/health
+curl.exe http://localhost:5111/health
 ```
 
 ### 3.6 WebUI indítás (Angular dev server)
@@ -100,7 +108,9 @@ UI:
 
 Fejlesztéshez proxy (WebApi felé):
 
-`apps/webui/proxy.conf.json` target -> `http://localhost:<WEBAPI_PORT>`
+Megj: A frontend fejlesztés közben Angular dev proxy konfigurációt használ. Ennek célja, hogy a WebUI-ból érkező /api kérések a lokálisan futó WebApi felé legyenek továbbítva, így a frontendben nem kell fix backend URL-t használni. Ez azt jelenti, hogy a frontendben elég relatív /api/... útvonalakat használni, és a dev szerver ezeket továbbítja a backend felé.
+
+`apps/webui/proxy.conf.json` target -> `http://localhost:5204`
 
 ## 4) Docker image-ek
 ### 4.1 Dockerfile-ok
@@ -135,7 +145,9 @@ Feladata:
 
 - GitOps “bump”: frissíti a `deployment/prod/kustomization.yaml` image tagjeit SHA-ra, commitol és pushol
 
-Fontos GitHub beállítás:
+GitHub Actions permissions:
+
+Ha a workflow jogosultsági hibával futna, érdemes ellenőrizni a repository Settings → Actions → General → Workflow permissions beállítását is. Ajánlott:
 
 - Repo → Settings → Actions → General → Workflow permissions:
 
@@ -143,21 +155,21 @@ Fontos GitHub beállítás:
 
 GHCR:
 
-- A GHCR package-eket Public-ra kell állítani, különben a K8s secret nélkül nem tudja lehúzni.
+- A GHCR package-eket Public-ra érdemes állítani, ha a klaszter imagePullSecret nélkül húzza le az image-eket.
 
-## 6) Lokális Kubernetes deploy (kind + Helm + kustomize)
+## 6) Lokális Kubernetes deploy (Docker Desktop Kubernetes + Helm + kustomize)
 
-### 6.1 kind cluster létrehozás
+### 6.1 Kubernetes bekapcsolása Docker Desktopban
 
-A `kind-config.yaml` port mapping:
+A projekt lokális Kubernetes futtatásához a Docker Desktop beépített Kubernetes támogatását használjuk. Ez egyszerűbb fejlesztői környezetet ad, mint egy külön kind cluster, és jobban illeszkedik ahhoz, hogy a MongoDB futtatásához is Docker Desktopot használunk.
 
-- WebUI: host `30080`
+Lépések:
 
-- WebApi: host `30081`
+1. Nyisd meg a Docker Desktopot.
+2. Kapcsold be a Kubernetes támogatást.
+3. Ellenőrizd, hogy a klaszter elérhető:
 
-Cluster létrehozás:
 ```
-kind create cluster --name alkfet --config kind-config.yaml
 kubectl get nodes
 ```
 
@@ -172,6 +184,10 @@ helm install alkfet-mongodb oci://registry-1.docker.io/cloudpirates/mongodb `
   --set auth.enabled=false `
   --set persistence.enabled=false
   ```
+
+Megjegyzés:
+
+Az auth.enabled=false és persistence.enabled=false beállítások a gyors, lokális fejlesztői/demó környezet egyszerűsítését szolgálják. Ezek nem production jellegű beállítások, hanem eldobható lokális futtatásra készültek.
 
 Ellenőrzés:
 
@@ -220,7 +236,7 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 UI:
 
-- https://localhost:8080 (self-signed figyelmeztetés oké)
+- https://localhost:8080 (self-signed figyelmeztetés elfogadható lokális környezetben)
 
 Admin jelszó (PowerShell base64 decode):
 ```
