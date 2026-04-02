@@ -45,7 +45,7 @@ A rendszer 2 fő UI nézetet tartalmaz:
 ### 3.1 Lokális fejlesztői futtatás
 - WebUI tipikusan: `http://localhost:4200`
 
-### 3.2 Kubernetes (kind) deploy után
+### 3.2 Lokális Kubernetes deploy után
 - WebUI: `http://localhost:30080`
 - WebApi (teszt): `http://localhost:30081/api/books?page=1&pageSize=10`
 

@@ -2,7 +2,7 @@
 GDE Alkfet.tech. beadandó
 
 
-Egy egyszerű, konténerizált (Docker) “Book Manager” alkalmazás **Angular + ASP.NET + MongoDB** alapon, CI/CD-vel (**GitHub Actions + GHCR + ArgoCD**) és Kubernetes telepítéssel (kind).
+Egy egyszerű, konténerizált (Docker) “Book Manager” alkalmazás **Angular + ASP.NET + MongoDB** alapon, CI/CD-vel (**GitHub Actions + GHCR + ArgoCD**) és lokális Kubernetes telepítéssel Docker Desktop környezetben.
 
 ---
 
