@@ -2,7 +2,7 @@ using Contracts;
 using WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddOpenApi(); // :contentReference[oaicite:2]{index=2}
+builder.Services.AddOpenApi(); 
 
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
 	p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
@@ -11,7 +11,7 @@ var baseUrl = builder.Configuration["DataAccess:BaseUrl"] ?? "http://localhost:5
 builder.Services.AddHttpClient<IDataAccessClient, DataAccessClient>(c => c.BaseAddress = new Uri(baseUrl));
 
 var app = builder.Build();
-if (app.Environment.IsDevelopment()) app.MapOpenApi(); // :contentReference[oaicite:3]{index=3}
+if (app.Environment.IsDevelopment()) app.MapOpenApi(); 
 app.UseCors();
 
 app.MapGet("/api/books", async (int page, int pageSize, IDataAccessClient client, CancellationToken ct)
