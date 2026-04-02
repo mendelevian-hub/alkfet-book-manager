@@ -3,9 +3,12 @@ name: ci
 on:
   push:
     branches: ["main"]
-    
-    paths-ignore:
-      - "deployment/prod/kustomization.yaml"
+    paths:
+      - ".github/workflows/ci.yml"
+      - "src/**"
+      - "apps/webui/**"
+      - "deployment/prod/**"
+      - "!deployment/prod/kustomization.yaml"
 
 permissions:
   contents: write
