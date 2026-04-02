@@ -5,10 +5,13 @@ on:
     branches: ["main"]
     paths:
       - ".github/workflows/ci.yml"
-      - "src/**"
+      - ".dockerignore"
+      - "src/AlkfetBookManager.slnx"
+      - "src/Contracts/**"
+      - "src/DataAccessApi/**"
+      - "src/WebApi/**"
+      - "src/McpService/**"
       - "apps/webui/**"
-      - "deployment/prod/**"
-      - "!deployment/prod/kustomization.yaml"
 
 permissions:
   contents: write
@@ -18,46 +21,143 @@ jobs:
   build_and_push:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        svc:
-          - name: dataaccess
-            dockerfile: src/DataAccessApi/Dockerfile
-            image: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
-          - name: webapi
-            dockerfile: src/WebApi/Dockerfile
-            image: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
-          - name: mcp
-            dockerfile: src/McpService/Dockerfile
-            image: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
-          - name: webui
-            dockerfile: apps/webui/Dockerfile
-            image: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
+    outputs:
+      any_changed: ${{ steps.changes.outputs.any_changed }}
+      dataaccess_changed: ${{ steps.changes.outputs.dataaccess_changed }}
+      webapi_changed: ${{ steps.changes.outputs.webapi_changed }}
+      mcp_changed: ${{ steps.changes.outputs.mcp_changed }}
+      webui_changed: ${{ steps.changes.outputs.webui_changed }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - uses: docker/login-action@v3
+      - name: Detect changed components
+        id: changes
+        shell: bash
+        run: |
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            CHANGED_FILES="$(git ls-files)"
+          else
+            CHANGED_FILES="$(git diff --name-only "$BEFORE" "$AFTER")"
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          dataaccess=false
+          webapi=false
+          mcp=false
+          webui=false
+
+          matches() {
+            echo "$CHANGED_FILES" | grep -E -q "$1"
+          }
+
+          # Ha maga a workflow vagy a dockerignore változik, egyszerűbb mindent újraépíteni
+          if matches '^\.github/workflows/ci\.yml$|^\.dockerignore$'; then
+            dataaccess=true
+            webapi=true
+            mcp=true
+            webui=true
+          fi
+
+          # Backend közös részek
+          if matches '^src/DataAccessApi/|^src/Contracts/|^src/AlkfetBookManager\.slnx$'; then
+            dataaccess=true
+          fi
+
+          if matches '^src/WebApi/|^src/Contracts/|^src/AlkfetBookManager\.slnx$'; then
+            webapi=true
+          fi
+
+          if matches '^src/McpService/|^src/Contracts/|^src/AlkfetBookManager\.slnx$'; then
+            mcp=true
+          fi
+
+          # Frontend
+          if matches '^apps/webui/'; then
+            webui=true
+          fi
+
+          any=false
+          if [ "$dataaccess" = true ] || [ "$webapi" = true ] || [ "$mcp" = true ] || [ "$webui" = true ]; then
+            any=true
+          fi
+
+          echo "any_changed=$any" >> "$GITHUB_OUTPUT"
+          echo "dataaccess_changed=$dataaccess" >> "$GITHUB_OUTPUT"
+          echo "webapi_changed=$webapi" >> "$GITHUB_OUTPUT"
+          echo "mcp_changed=$mcp" >> "$GITHUB_OUTPUT"
+          echo "webui_changed=$webui" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        if: steps.changes.outputs.any_changed == 'true'
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: docker/build-push-action@v6
+      - name: Build and push dataaccess
+        if: steps.changes.outputs.dataaccess_changed == 'true'
+        uses: docker/build-push-action@v6
         with:
           context: .
-          file: ${{ matrix.svc.dockerfile }}
+          file: src/DataAccessApi/Dockerfile
           push: true
           tags: |
-            ${{ matrix.svc.image }}:latest
-            ${{ matrix.svc.image }}:${{ github.sha }}
+            ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess:latest
+            ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess:${{ github.sha }}
+
+      - name: Build and push webapi
+        if: steps.changes.outputs.webapi_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/WebApi/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/mendelevian-hub/alkfet-book-manager-webapi:latest
+            ghcr.io/mendelevian-hub/alkfet-book-manager-webapi:${{ github.sha }}
+
+      - name: Build and push mcp
+        if: steps.changes.outputs.mcp_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/McpService/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/mendelevian-hub/alkfet-book-manager-mcp:latest
+            ghcr.io/mendelevian-hub/alkfet-book-manager-mcp:${{ github.sha }}
+
+      - name: Build and push webui
+        if: steps.changes.outputs.webui_changed == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/webui/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/mendelevian-hub/alkfet-book-manager-webui:latest
+            ghcr.io/mendelevian-hub/alkfet-book-manager-webui:${{ github.sha }}
 
   bump_kustomize_tags:
-    if: github.actor != 'github-actions[bot]'
+    if: github.actor != 'github-actions[bot]' && needs.build_and_push.outputs.any_changed == 'true'
     needs: build_and_push
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
 
       - name: Install kustomize
         run: |
@@ -66,12 +166,28 @@ jobs:
           sudo mv kustomize /usr/local/bin/kustomize
           kustomize version
 
-      - name: Update image tags in kustomization.yaml to SHA
+      - name: Update dataaccess image tag
+        if: needs.build_and_push.outputs.dataaccess_changed == 'true'
+        working-directory: deployment/prod
         run: |
-          cd deployment/prod
           kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess=ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess:${GITHUB_SHA}
+
+      - name: Update webapi image tag
+        if: needs.build_and_push.outputs.webapi_changed == 'true'
+        working-directory: deployment/prod
+        run: |
           kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-webapi=ghcr.io/mendelevian-hub/alkfet-book-manager-webapi:${GITHUB_SHA}
+
+      - name: Update mcp image tag
+        if: needs.build_and_push.outputs.mcp_changed == 'true'
+        working-directory: deployment/prod
+        run: |
           kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-mcp=ghcr.io/mendelevian-hub/alkfet-book-manager-mcp:${GITHUB_SHA}
+
+      - name: Update webui image tag
+        if: needs.build_and_push.outputs.webui_changed == 'true'
+        working-directory: deployment/prod
+        run: |
           kustomize edit set image ghcr.io/mendelevian-hub/alkfet-book-manager-webui=ghcr.io/mendelevian-hub/alkfet-book-manager-webui:${GITHUB_SHA}
 
       - name: Commit & push tag bump
@@ -79,5 +195,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add deployment/prod/kustomization.yaml
-          git commit -m "chore: bump images to ${GITHUB_SHA}" || exit 0
-          git push
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: bump changed images to ${GITHUB_SHA}"
+          git push origin HEAD:${{ github.ref_name }}
