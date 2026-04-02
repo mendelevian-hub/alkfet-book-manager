@@ -13,13 +13,13 @@ resources:
 images:
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
-  newTag: a6a467a43cac60e51c099111f06b9e397e0f5135
+  newTag: fd24fd4a94149e683634537f0ad19371d6557315
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
-  newTag: a6a467a43cac60e51c099111f06b9e397e0f5135
+  newTag: fd24fd4a94149e683634537f0ad19371d6557315
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-webapi
-  newTag: a6a467a43cac60e51c099111f06b9e397e0f5135
+  newTag: fd24fd4a94149e683634537f0ad19371d6557315
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
-  newTag: a6a467a43cac60e51c099111f06b9e397e0f5135
+  newTag: fd24fd4a94149e683634537f0ad19371d6557315
