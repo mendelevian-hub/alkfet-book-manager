@@ -22,4 +22,4 @@ images:
   newTag: 7a1a85c0de155ca6647a0f3bb48523e8f228e2ca
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-webui
-  newTag: 7a1a85c0de155ca6647a0f3bb48523e8f228e2ca
+  newTag: 3cc30cee122d365ef731246025510be4bcb18546
