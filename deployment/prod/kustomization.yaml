@@ -13,7 +13,7 @@ resources:
 images:
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-dataaccess
-  newTag: 7a1a85c0de155ca6647a0f3bb48523e8f228e2ca
+  newTag: 838a7505a6bfb0f17a0d7ef21a3c0a5697b7158f
 - name: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
   newName: ghcr.io/mendelevian-hub/alkfet-book-manager-mcp
   newTag: 7a1a85c0de155ca6647a0f3bb48523e8f228e2ca
