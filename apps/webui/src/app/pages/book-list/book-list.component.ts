@@ -38,6 +38,27 @@ export class BookListComponent {
     });
   }
 
+  deleteBook(book: Book): void {
+    if (!confirm(`Delete "${book.title}"?`)) return;
+
+    this.error = null;
+
+    this.books.deleteBook(book.id).subscribe({
+      next: () => {
+        // Ha az utolsó elemet törölted az oldalon, és nem az első oldalon vagy,
+        // akkor visszalép egy oldalt.
+        if (this.items.length === 1 && this.page > 1) {
+          this.page--;
+        }
+
+        this.load();
+      },
+      error: () => {
+        this.error = 'Failed to delete book.';
+      }
+    });
+  }
+
   prev(): void {
     if (this.page <= 1) return;
     this.page--;
